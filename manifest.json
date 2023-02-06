@@ -1,0 +1,14 @@
+{
+    "manifest_version": 3,
+    
+    "name": "Continue Watching",
+    "description": "Keep tabs of your tv shows",
+    "version": "0.0.1",
+
+    "action": {
+        "default_popup": "./popup.html"
+    },
+
+    "permissions": ["history"]
+
+}

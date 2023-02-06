@@ -1,0 +1,9 @@
+* {
+    width: 400px;
+}
+
+.show {
+    font-size: large;
+    margin-top: 5px;
+    color: rgb(22, 147, 34);
+}
