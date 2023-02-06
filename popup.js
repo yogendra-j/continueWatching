@@ -12,36 +12,39 @@ function addShowToList(showName, url, className) {
   document.querySelector("ul").appendChild(node);
 }
 
+function getShowListItemName(showName, seasonNumber, episodeNumber) {
+  return `${showName} season ${seasonNumber} episode ${episodeNumber}`;
+}
+
 chrome.history.search(
   {
     text: "watch hotstar",
-    startTime: (new Date()).setFullYear(2010),
-    maxResults: 100000
+    startTime: new Date().setFullYear(2010),
+    maxResults: 100000,
   },
   (result) => {
-    let hotStartShows = [];
+    let showsAdded = new Set();
     let pattern = /Watch (.+) Season (\d+) Episode (\d+)/;
-  
-    result = result
-      .filter(item => item.url && item.url.includes("bookmarkTime") && item.url.includes("/tv/"))
-      .map(item => {
-        return {name: item.title.match(pattern), url: item.url};
-      })
-      .forEach(i => {
-        let item = i.name;
-        let show = hotStartShows.find(val => val.name === item[1]) || 
-        {
-          name: item[1],
-          seasons: {
-          },
+
+    result
+      .filter(
+        (historyItem) =>
+          historyItem.url &&
+          historyItem.url.includes("bookmarkTime") &&
+          historyItem.url.includes("/tv/")
+      )
+      .map((historyItem) => {
+        let [_, showName, seasonNumber, episodeNumber] = historyItem.title.match(pattern);
+        return { 
+          name: showName,
+          showListItemName: getShowListItemName(showName, seasonNumber, episodeNumber), 
+          url: historyItem.url 
         };
-        show.seasons[item[2]] = show.seasons[item[2]] || [];
-        show.seasons[item[2]].push([item[3], i.url]);
-        hotStartShows.find(val => val.name === item[1]) || hotStartShows.push(show);
+      })
+      .forEach((show) => {
+        if (showsAdded.has(show.name)) return;
+        showsAdded.add(show.name);
+        addShowToList(show.showListItemName, show.url, "show");
       });
-      console.log(hotStartShows);
-    hotStartShows
-    .map(show => [show.name + " season " + Math.max(...Object.keys(show.seasons)) + " episode " + Math.max(...show.seasons[Math.max(...Object.keys(show.seasons))].map(x => parseInt(x[0]))), show.seasons[Math.max(...Object.keys(show.seasons))].reduce((agg, cur) => agg[0] > cur[0] ? agg : cur)[1]])
-    .forEach(show => addShowToList(show[0], show[1], "show"));
   }
 );
